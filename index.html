@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Pasta Fantasy League</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================
+     DESIGN TOKENS
+     ===================================================== */
+  :root{
+    --paper:#EFE3C0;
+    --card:#FBF6E9;
+    --ink:#2B2320;
+    --ink-soft:#5c4f3f;
+    --tomato:#C1442D;
+    --tomato-dark:#9c331f;
+    --basil:#4B6043;
+    --gold:#C89B3C;
+    --gold-light:#e6c877;
+    --line: rgba(43,35,32,0.12);
+    --radius: 10px;
+    --shadow: 0 2px 0 rgba(43,35,32,0.08), 0 8px 20px -12px rgba(43,35,32,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  h1,h2,h3,h4{ font-family:'Fraunces', serif; margin:0; }
+
+  .stat, .num { font-family:'IBM Plex Mono', monospace; }
+
+  a{ color:var(--tomato-dark); }
+
+  /* focus visibility for keyboard nav */
+  button:focus-visible, a:focus-visible{
+    outline:3px solid var(--tomato);
+    outline-offset:2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  /* =====================================================
+     LAYOUT SHELL
+     ===================================================== */
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 20px 80px; }
+
+  header.masthead{
+    padding:56px 20px 28px;
+    text-align:center;
+    position:relative;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--tomato-dark);
+    font-weight:600;
+  }
+  .league-title{
+    font-size: clamp(38px, 7vw, 76px);
+    font-weight:900;
+    line-height:0.98;
+    margin-top:8px;
+    letter-spacing:-0.01em;
+  }
+  .league-title .est{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    margin-top:10px;
+  }
+
+  .checker-rule{
+    height:10px;
+    margin: 26px auto 0;
+    max-width:420px;
+    background-image: repeating-linear-gradient(45deg, var(--tomato) 0 10px, var(--paper) 10px 20px);
+    border-radius:4px;
+    opacity:0.85;
+  }
+
+  /* Hall of fame strip */
+  .hof{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+    margin:36px 0 8px;
+  }
+  .hof-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px 18px 16px;
+  }
+  .hof-year{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    letter-spacing:0.08em;
+  }
+  .hof-place{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:6px 0;
+    border-top:1px dashed var(--line);
+    font-size:14px;
+  }
+  .hof-place:first-of-type{ border-top:none; margin-top:10px; }
+  .hof-medal{ font-weight:700; color:var(--tomato-dark); width:26px; }
+  .hof-name{ flex:1; font-weight:600; }
+
+  /* =====================================================
+     TABS
+     ===================================================== */
+  nav.tabs{
+    position:sticky; top:0; z-index:20;
+    background:var(--paper);
+    padding:14px 0 10px;
+    margin-top:20px;
+    border-bottom:2px solid var(--ink);
+  }
+  .tabs-inner{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+  }
+  .tab-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    background:var(--card);
+    border:1px solid var(--ink);
+    color:var(--ink);
+    padding:9px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:transform .12s ease, background .12s ease, color .12s ease;
+  }
+  .tab-btn:hover{ transform:translateY(-1px); }
+  .tab-btn.active{
+    background:var(--tomato);
+    border-color:var(--tomato-dark);
+    color:#fff8ec;
+  }
+
+  section.panel{ display:none; padding-top:34px; animation:fadein .25s ease; }
+  section.panel.active{ display:block; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  .panel-head{ margin-bottom:22px; }
+  .panel-head h2{ font-size:30px; font-weight:700; }
+  .panel-head p{ color:var(--ink-soft); margin-top:6px; max-width:60ch; }
+
+  /* generic card grid */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:16px; }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+  }
+
+  /* =====================================================
+     RULES
+     ===================================================== */
+  .rules-list{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:8px 24px; }
+  .rules-list li{ padding:14px 0; border-bottom:1px dashed var(--line); }
+  .rules-list li:last-child{ border-bottom:none; }
+  .rules-list h4{ font-size:16px; margin-bottom:4px; }
+  .rules-list p{ margin:0; color:var(--ink-soft); font-size:14px; }
+
+  /* =====================================================
+     MANAGERS
+     ===================================================== */
+  .mgr-card{ display:flex; flex-direction:column; gap:10px; }
+  .mgr-top{ display:flex; align-items:center; gap:12px; }
+  .mgr-badge{
+    width:44px; height:44px; border-radius:50%;
+    background:var(--basil); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:700; font-size:18px;
+    flex-shrink:0;
+  }
+  .mgr-name{ font-size:18px; font-weight:700; }
+  .mgr-team{ font-size:13px; color:var(--ink-soft); }
+  .mgr-stats{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
+  .mgr-stat{ background:var(--paper); border-radius:8px; padding:8px 10px; }
+  .mgr-stat .num{ font-size:16px; font-weight:600; display:block; }
+  .mgr-stat .lbl{ font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); }
+  .mgr-note{ font-size:13px; color:var(--ink-soft); border-top:1px dashed var(--line); padding-top:8px; }
+
+  /* =====================================================
+     CHALLENGES
+     ===================================================== */
+  .chal-subhead{ font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--tomato-dark); margin:30px 0 12px; }
+  .chal-subhead:first-child{ margin-top:0; }
+  .chal-card{ position:relative; overflow:hidden; }
+  .chal-card.won::before{
+    content:"WON"; position:absolute; top:10px; right:-30px;
+    background:var(--basil); color:#fff; font-size:11px; font-weight:700;
+    padding:3px 34px; transform:rotate(35deg);
+    font-family:'IBM Plex Mono',monospace; letter-spacing:0.08em;
+  }
+  .chal-week{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); }
+  .chal-title{ font-size:16px; font-weight:700; margin:4px 0 8px; }
+  .chal-desc{ font-size:13px; color:var(--ink-soft); margin-bottom:10px; }
+  .chal-pot{ display:inline-block; background:var(--gold-light); color:#4a3a10; font-weight:700; font-size:12px; padding:3px 10px; border-radius:999px; }
+  .chal-winner{ margin-top:10px; font-size:13px; font-weight:600; }
+
+  /* =====================================================
+     RECORDS -- trophy case
+     ===================================================== */
+  .case{
+    background: linear-gradient(180deg, #3a2c22, #241a14);
+    border-radius:14px;
+    padding:36px 24px 10px;
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.4), var(--shadow);
+  }
+  .shelf-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+    gap:0 8px;
+    border-bottom:14px solid #5b4230;
+    box-shadow: 0 6px 10px -4px rgba(0,0,0,0.5);
+    padding-bottom:0;
+    margin-bottom:38px;
+  }
+  .trophy-slot{ display:flex; flex-direction:column; align-items:center; padding:0 8px 22px; }
+  .trophy{ display:flex; flex-direction:column; align-items:center; }
+  .trophy-ring{
+    width:20px; height:20px; border-radius:50%;
+    border:6px solid var(--gold);
+    margin-bottom:-4px;
+  }
+  .trophy-cup{
+    width:64px; height:52px;
+    background: linear-gradient(160deg, var(--gold-light), var(--gold) 60%, #a9791f);
+    border-radius: 50% 50% 12px 12px;
+    position:relative;
+  }
+  .trophy-cup::before, .trophy-cup::after{
+    content:"";
+    position:absolute; top:6px;
+    width:16px; height:22px;
+    border:5px solid var(--gold);
+    border-right:none; border-radius:10px 0 0 10px;
+  }
+  .trophy-cup::before{ left:-16px; }
+  .trophy-cup::after{ right:-16px; transform:scaleX(-1); }
+  .trophy-stem{ width:10px; height:16px; background:var(--gold); margin:0 auto; }
+  .trophy-base{ width:44px; height:10px; background:#a9791f; border-radius:3px; margin:0 auto; }
+  .trophy-label{ margin-top:12px; text-align:center; color:#fff8ec; }
+  .trophy-label .rec-name{ font-family:'Fraunces',serif; font-weight:700; font-size:14px; }
+  .trophy-label .rec-value{ font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--gold-light); margin-top:2px; }
+  .trophy-label .rec-holder{ font-size:12px; color:#d8cdb8; margin-top:2px; }
+
+  /* =====================================================
+     DRAFT CENTRAL
+     ===================================================== */
+  .draft-info{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:26px; }
+  .draft-info .card .lbl{ font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-soft); }
+  .draft-info .card .val{ font-family:'Fraunces',serif; font-size:22px; font-weight:700; margin-top:4px; }
+
+  .upload-box{
+    border:2px dashed var(--ink);
+    border-radius:var(--radius);
+    padding:26px;
+    text-align:center;
+    background:var(--card);
+  }
+  .upload-box input[type=file]{ margin-top:10px; }
+  .upload-note{ font-size:12px; color:var(--ink-soft); margin-top:10px; }
+
+  table{ width:100%; border-collapse:collapse; margin-top:20px; background:var(--card); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+  th,td{ padding:10px 12px; text-align:left; border-bottom:1px solid var(--line); font-size:14px; }
+  th{ background:var(--ink); color:#fff8ec; font-family:'IBM Plex Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.05em; }
+  tr:last-child td{ border-bottom:none; }
+
+  /* =====================================================
+     STANDINGS
+     ===================================================== */
+  .standings-top{ display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between; align-items:flex-end; margin-bottom:6px; }
+  .updated-note{ font-size:12px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; }
+  .playoff-badge{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--basil); color:#fff; }
+  .bubble-badge{ background:var(--gold-light); color:#4a3a10; }
+  .out-badge{ background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
+
+  /* =====================================================
+     RETIREES
+     ===================================================== */
+  .ret-card h3{ font-size:18px; }
+  .ret-years{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .ret-accolades{ margin:10px 0; font-size:13px; }
+  .ret-accolades li{ margin-bottom:3px; }
+  .ret-story{ font-size:13px; font-style:italic; color:var(--ink-soft); border-top:1px dashed var(--line); padding-top:8px; margin-top:8px; }
+
+  footer{ text-align:center; padding:40px 20px; font-size:12px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="eyebrow">Fantasy Football &mdash; Est. 2023</div>
+  <h1 class="league-title">THE PASTA<br>FANTASY LEAGUE
+    <span class="est">FOUR SEASONS OF SAUCE, STANDINGS &amp; SMACK TALK</span>
+  </h1>
+  <div class="checker-rule"></div>
+</header>
+
+<div class="wrap">
+
+  <div id="hof" class="hof"></div>
+
+  <nav class="tabs">
+    <div class="tabs-inner" id="tabButtons"></div>
+  </nav>
+
+  <section class="panel" id="panel-rules"></section>
+  <section class="panel" id="panel-managers"></section>
+  <section class="panel" id="panel-challenges"></section>
+  <section class="panel" id="panel-records"></section>
+  <section class="panel" id="panel-draft"></section>
+  <section class="panel" id="panel-standings"></section>
+  <section class="panel" id="panel-retirees"></section>
+
+</div>
+
+<footer>The Pasta Fantasy League &middot; every season is al dente</footer>
+
+<script>
+/* =========================================================================
+   THE PASTA FANTASY LEAGUE -- SITE DATA
+   -------------------------------------------------------------------------
+   Everything on the site is generated from the DATA object below. To
+   update the site, edit the values in this object and save the file --
+   you do not need to touch any HTML or CSS.
+
+   Text wrapped in [BRACKETS] is a placeholder. Replace it with your real
+   info. Each section keeps one filled-out example so you can see the
+   format, plus extra blank entries already built so you just fill them
+   in rather than having to add new ones.
+   ========================================================================= */
+
+const DATA = {
+
+  // ---- LEAGUE HISTORY (shown at the top of the page) ----
+  // One entry per season. Add a new one each year.
+  history: [
+    { year: 2023, first: "Andrew Samuels", second: "Parker Johnson", third: "Garrett Lusk", last: "Max Swan" },
+    { year: 2024, first: "Parker Johnson", second: "Annie Uyeki", third: "Eva Mayo", last: "Henry Isaacson" },
+    { year: 2025, first: "Parker Johnson", second: "Hugo Mayson", third: "Henry Isaacson", last: "Max Swan" },
+  ],
+
+  // ---- RULES (2026 ESPN league rules) ----
+  // Give each rule a short title and a plain-language explanation.
+  rules: [
+    { title: "[Scoring type]", detail: "[e.g. PPR, Half-PPR, Standard -- describe your scoring settings]" },
+    { title: "[Roster size]", detail: "[Total roster spots, starters vs. bench]" },
+    { title: "[Playoff format]", detail: "[How many teams make the playoffs -- looks like 6, given Wk 16-18 are Playoffs/Semi/Final]" },
+    { title: "[Waivers]", detail: "[Waiver type -- FAAB, rolling, etc. -- and budget if applicable]" },
+    { title: "[Trade rules]", detail: "[Trade deadline, veto rules, etc.]" },
+    { title: "[Payouts]", detail: "[How the buy-in is split among places]" },
+  ],
+
+  // ---- 2026 MANAGERS ----
+  // One box per manager. "team" is their most recently known team name
+  // (2025) -- update once 2026 team names are set. "rival" is their most
+  // frequent head-to-head opponent from the spreadsheet (ties broken by
+  // the more evenly-played record).
+  managers: [
+    { name: "Parker Johnson", team: "Four Fans of Freedom", initials: "PJ", record: "34-18", winPct: ".654", bestFinish: "1st", champs: 2, rival: "Garrett Lusk (5-3, 8 games)" },
+    { name: "Hugo Mayson", team: "Mad Rooter", initials: "HM", record: "22-30", winPct: ".423", bestFinish: "2nd", champs: 0, rival: "Parker Johnson (1-6, 7 games)" },
+    { name: "Henry Isaacson", team: "Devonta Smithwicks", initials: "HI", record: "12-22", winPct: ".353", bestFinish: "3rd", champs: 0, rival: "Max Swan (4-3, 7 games)" },
+    { name: "Garrett Lusk", team: "Dez Caught It", initials: "GL", record: "28-24", winPct: ".538", bestFinish: "3rd", champs: 0, rival: "Parker Johnson (3-5, 8 games)" },
+    { name: "Tommy Van Pelt", team: "Hooked On BoNix", initials: "TVP", record: "34-18", winPct: ".654", bestFinish: "5th", champs: 0, rival: "Eva Mayo (6-1, 7 games)" },
+    { name: "Eva Mayo", team: "First Down Divas", initials: "EM", record: "25-27", winPct: ".481", bestFinish: "3rd", champs: 0, rival: "Annie Uyeki (3-4, 7 games)" },
+    { name: "Caroline Smith", team: "Caroline's Men", initials: "CS", record: "11-6", winPct: ".647", bestFinish: "7th", champs: 0, rival: "Annie Uyeki (2-1, 3 games)" },
+    { name: "Annie Uyeki", team: "Team BFPQueen", initials: "AU", record: "24-28", winPct: ".462", bestFinish: "2nd", champs: 0, rival: "Eva Mayo (4-3, 7 games)" },
+    { name: "Max Swan", team: "Go Get Em", initials: "MS", record: "18-34", winPct: ".346", bestFinish: "9th", champs: 0, rival: "Henry Isaacson (3-4, 7 games)" },
+    { name: "Quinn Tunnell", team: "For Sureeeeeeeee FC", initials: "QT", record: "15-19", winPct: ".441", bestFinish: "7th", champs: 0, rival: "Hugo Mayson (3-2, 5 games)" },
+  ],
+
+  // ---- CHALLENGES ($5 side bets, 10 of the ~15 regular season weeks) ----
+  // status: "upcoming" or "won". For "won" challenges, fill in "winner"
+  // once it's decided each week.
+  challenges: [
+    { week: "Week 1", title: "Hot Start", status: "upcoming", desc: "Highest team score of the week.", pot: "$5", winner: "" },
+    { week: "Week 2", title: "Crash and Burn", status: "upcoming", desc: "Biggest point dropoff from Week 1 to Week 2.", pot: "$5", winner: "" },
+    { week: "Week 4", title: "MVP", status: "upcoming", desc: "Team with the highest-scoring individual player of the week.", pot: "$5", winner: "" },
+    { week: "Week 6", title: "Bench Warmer", status: "upcoming", desc: "Team with the highest-scoring bench player of the week.", pot: "$5", winner: "" },
+    { week: "Week 8", title: "Photo Finish", status: "upcoming", desc: "Closest margin of victory in any matchup.", pot: "$5", winner: "" },
+    { week: "Week 9", title: "Bullseye", status: "upcoming", desc: "Team that finishes closest to its projected points total.", pot: "$5", winner: "" },
+    { week: "Week 10", title: "Best Loser", status: "upcoming", desc: "Team with the most points scored while still losing.", pot: "$5", winner: "" },
+    { week: "Week 12", title: "Biggest Blowout", status: "upcoming", desc: "Largest margin of victory in any matchup.", pot: "$5", winner: "" },
+    { week: "Week 13", title: "Black Jack", status: "upcoming", desc: "Player who scores closest to 21 points without going over.", pot: "$5", winner: "" },
+    { week: "Week 15", title: "Wild Card", status: "upcoming", desc: "Lowest-ranked team to make the playoffs.", pot: "$5", winner: "" },
+  ],
+
+  // ---- RECORDS (trophy case) ----
+  // Add or remove trophies freely -- the case reflows automatically.
+  records: [
+    { name: "Most Championships", value: "2", holder: "Parker Johnson" },
+    { name: "Highest Career Win %", value: ".722", holder: "Andrew Samuels (1 season, retired)" },
+    { name: "Most Career Wins", value: "34", holder: "Parker Johnson & Tommy Van Pelt (tied)" },
+    { name: "Highest Single Week Score", value: "207.86", holder: "Tommy Van Pelt, Wk 7, 2025" },
+    { name: "[Longest Win Streak]", value: "[games]", holder: "[Manager Name]" },
+    { name: "[Most Money Won (Challenges)]", value: "[$]", holder: "[Manager Name]" },
+  ],
+
+  // ---- DRAFT CENTRAL ----
+  draft: {
+    date: "August 23rd (tentative)",
+    time: "7:00 PM EST (tentative)",
+    location: "[In-person address or video call link]",
+    notes: "Draft order TBD. [Add any other pertinent info -- keeper rules, snack duty, etc.]",
+    // Once the draft happens, you can either fill in resultsTable below by
+    // hand, or use the "Upload draft results" box on the page to load a
+    // CSV. Note: an uploaded CSV only displays for your current visit to
+    // the page -- it is not saved to the file. To make it permanent for
+    // everyone, copy the values into resultsTable below.
+    resultsTable: [
+      // { round: 1, pick: 1, manager: "[Manager]", player: "[Player Drafted]" },
+    ]
+  },
+
+  // ---- STANDINGS (update manually each week) ----
+  // Team/manager names are seeded from 2025 -- update once the 2026
+  // season starts. Record/PF/PA reset to 0-0 until Week 1 is played.
+  standingsUpdated: "Preseason -- 2026 season not yet started",
+  standings: [
+    { rank: 1, team: "Four Fans of Freedom", manager: "Parker Johnson", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 2, team: "Mad Rooter", manager: "Hugo Mayson", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 3, team: "Devonta Smithwicks", manager: "Henry Isaacson", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 4, team: "Dez Caught It", manager: "Garrett Lusk", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 5, team: "Hooked On BoNix", manager: "Tommy Van Pelt", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 6, team: "First Down Divas", manager: "Eva Mayo", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 7, team: "Caroline's Men", manager: "Caroline Smith", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 8, team: "Team BFPQueen", manager: "Annie Uyeki", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 9, team: "Go Get Em", manager: "Max Swan", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 10, team: "For Sureeeeeeeee FC", manager: "Quinn Tunnell", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+  ],
+
+  // ---- RETIREES ----
+  retirees: [
+    {
+      name: "Andrew Samuels", years: "2023",
+      accolades: ["2023 League Champion", "Highest career win percentage in league history (.722)"],
+      story: "[The funny/honest reason they retired -- keep it good-natured]"
+    },
+    {
+      name: "Joshua Sherry", years: "2023",
+      accolades: ["9-9 career record"],
+      story: "[The funny/honest reason they retired -- keep it good-natured]"
+    },
+    {
+      name: "Molly Sanders", years: "2023-2024",
+      accolades: ["15-20 career record", "4th place finish, 2024"],
+      story: "[The funny/honest reason they retired -- keep it good-natured]"
+    },
+  ],
+};
+
+/* =========================================================================
+   RENDERING -- you shouldn't need to edit anything below this line.
+   ========================================================================= */
+
+const TABS = [
+  { id: "rules", label: "Rules" },
+  { id: "managers", label: "2026 Managers" },
+  { id: "challenges", label: "Challenges" },
+  { id: "records", label: "Records" },
+  { id: "draft", label: "Draft Central" },
+  { id: "standings", label: "Standings" },
+  { id: "retirees", label: "Retirees" },
+];
+
+function el(html){ const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+
+function renderHOF(){
+  const hof = document.getElementById('hof');
+  hof.innerHTML = DATA.history.map(h => `
+    <div class="hof-card">
+      <div class="hof-year">${h.year} SEASON</div>
+      <div class="hof-place"><span class="hof-medal">1st</span><span class="hof-name">${h.first}</span></div>
+      <div class="hof-place"><span class="hof-medal">2nd</span><span class="hof-name">${h.second}</span></div>
+      <div class="hof-place"><span class="hof-medal">3rd</span><span class="hof-name">${h.third}</span></div>
+      ${h.last ? `<div class="hof-place"><span class="hof-medal" style="color:var(--ink-soft);">Last</span><span class="hof-name" style="font-weight:500; color:var(--ink-soft);">${h.last}</span></div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderTabs(){
+  const tb = document.getElementById('tabButtons');
+  tb.innerHTML = TABS.map((t,i) => `<button class="tab-btn${i===0?' active':''}" data-tab="${t.id}">${t.label}</button>`).join('');
+  tb.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => showTab(btn.dataset.tab));
+  });
+}
+
+function showTab(id){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('section.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+}
+
+function renderRules(){
+  const p = document.getElementById('panel-rules');
+  p.innerHTML = `
+    <div class="panel-head"><h2>League Rules</h2><p>2026 ESPN league settings.</p></div>
+    <ul class="rules-list" style="list-style:none; padding-left:24px;">
+      ${DATA.rules.map(r => `<li><h4>${r.title}</h4><p>${r.detail}</p></li>`).join('')}
+    </ul>
+  `;
+}
+
+function renderManagers(){
+  const p = document.getElementById('panel-managers');
+  p.innerHTML = `
+    <div class="panel-head"><h2>2026 Managers</h2><p>All 10 managers, their career numbers, and the stats that make this league fun to argue about.</p></div>
+    <div class="grid">
+      ${DATA.managers.map(m => `
+        <div class="card mgr-card">
+          <div class="mgr-top">
+            <div class="mgr-badge">${m.initials}</div>
+            <div>
+              <div class="mgr-name">${m.name}</div>
+              <div class="mgr-team">${m.team}</div>
+            </div>
+          </div>
+          <div class="mgr-stats">
+            <div class="mgr-stat"><span class="num">${m.record || '&mdash;'}</span><span class="lbl">All-Time Record</span></div>
+            <div class="mgr-stat"><span class="num">${m.winPct || '&mdash;'}</span><span class="lbl">Win %</span></div>
+            <div class="mgr-stat"><span class="num">${m.bestFinish || '&mdash;'}</span><span class="lbl">Best Finish</span></div>
+            <div class="mgr-stat"><span class="num">${m.champs ?? 0}</span><span class="lbl">Championships</span></div>
+          </div>
+          ${m.rival ? `<div class="mgr-note">Top rival: <strong>${m.rival}</strong></div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderChallenges(){
+  const p = document.getElementById('panel-challenges');
+  const upcoming = DATA.challenges.filter(c => c.status !== 'won');
+  const won = DATA.challenges.filter(c => c.status === 'won');
+  const card = c => `
+    <div class="card chal-card ${c.status === 'won' ? 'won' : ''}">
+      <div class="chal-week">${c.week}</div>
+      <div class="chal-title">${c.title}</div>
+      <div class="chal-desc">${c.desc}</div>
+      <span class="chal-pot">${c.pot} pot</span>
+      ${c.status === 'won' ? `<div class="chal-winner">Winner: ${c.winner}</div>` : ''}
+    </div>
+  `;
+  p.innerHTML = `
+    <div class="panel-head"><h2>Weekly Challenges</h2><p>$5 in, winner take all. Ten of roughly fifteen weeks each season.</p></div>
+    <div class="chal-subhead">Upcoming</div>
+    <div class="grid">${upcoming.map(card).join('') || '<p>No upcoming challenges set yet.</p>'}</div>
+    <div class="chal-subhead">Completed</div>
+    <div class="grid">${won.map(card).join('') || '<p>No challenges completed yet.</p>'}</div>
+  `;
+}
+
+function renderRecords(){
+  const p = document.getElementById('panel-records');
+  p.innerHTML = `
+    <div class="panel-head"><h2>Records</h2><p>The trophy case.</p></div>
+    <div class="case">
+      <div class="shelf-row">
+        ${DATA.records.map(r => `
+          <div class="trophy-slot">
+            <div class="trophy">
+              <div class="trophy-ring"></div>
+              <div class="trophy-cup"></div>
+              <div class="trophy-stem"></div>
+              <div class="trophy-base"></div>
+            </div>
+            <div class="trophy-label">
+              <div class="rec-name">${r.name}</div>
+              <div class="rec-value">${r.value}</div>
+              <div class="rec-holder">${r.holder}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderDraft(){
+  const p = document.getElementById('panel-draft');
+  const d = DATA.draft;
+  p.innerHTML = `
+    <div class="panel-head"><h2>Draft Central</h2><p>Everything you need to know before the draft.</p></div>
+    <div class="draft-info">
+      <div class="card"><div class="lbl">Date</div><div class="val">${d.date}</div></div>
+      <div class="card"><div class="lbl">Time</div><div class="val">${d.time}</div></div>
+      <div class="card"><div class="lbl">Location</div><div class="val" style="font-size:16px;">${d.location}</div></div>
+    </div>
+    <div class="card" style="margin-bottom:26px;"><div class="lbl">Notes</div><p style="margin:6px 0 0;">${d.notes}</p></div>
+
+    <div class="upload-box">
+      <strong>Upload draft results</strong>
+      <p class="upload-note">Upload a CSV with columns: round, pick, manager, player. This loads a preview below for the current visit -- copy the values into the resultsTable in the data section to make it permanent.</p>
+      <input type="file" id="draftUpload" accept=".csv">
+    </div>
+    <div id="draftResults"></div>
+  `;
+
+  renderDraftTable(d.resultsTable);
+
+  document.getElementById('draftUpload').addEventListener('change', function(e){
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt){
+      const rows = evt.target.result.trim().split('\n').map(line => line.split(','));
+      const [header, ...body] = rows;
+      const parsed = body.map(r => ({
+        round: r[0]?.trim(), pick: r[1]?.trim(), manager: r[2]?.trim(), player: r[3]?.trim()
+      }));
+      renderDraftTable(parsed);
+    };
+    reader.readAsText(file);
+  });
+}
+
+function renderDraftTable(rows){
+  const target = document.getElementById('draftResults');
+  if (!rows || rows.length === 0){
+    target.innerHTML = '<p style="color:var(--ink-soft); font-size:14px;">No draft results yet.</p>';
+    return;
+  }
+  target.innerHTML = `
+    <table>
+      <thead><tr><th>Round</th><th>Pick</th><th>Manager</th><th>Player</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `<tr><td>${r.round}</td><td>${r.pick}</td><td>${r.manager}</td><td>${r.player}</td></tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderStandings(){
+  const p = document.getElementById('panel-standings');
+  const badge = s => s === 'in' ? '<span class="playoff-badge">IN</span>'
+                : s === 'bubble' ? '<span class="playoff-badge bubble-badge">BUBBLE</span>'
+                : '<span class="playoff-badge out-badge">OUT</span>';
+  p.innerHTML = `
+    <div class="standings-top">
+      <div class="panel-head" style="margin-bottom:0;"><h2>Standings</h2><p>Updated manually -- paste in the latest numbers from ESPN each week.</p></div>
+      <div class="updated-note">Last updated: ${DATA.standingsUpdated}</div>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>PF</th><th>PA</th><th>Playoffs</th></tr></thead>
+      <tbody>
+        ${DATA.standings.map(s => `
+          <tr>
+            <td>${s.rank}</td><td>${s.team}</td><td>${s.manager}</td>
+            <td class="num">${s.record}</td><td class="num">${s.pf}</td><td class="num">${s.pa}</td>
+            <td>${badge(s.playoff)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderRetirees(){
+  const p = document.getElementById('panel-retirees');
+  p.innerHTML = `
+    <div class="panel-head"><h2>Retirees</h2><p>Gone, but not forgotten. Honorably or otherwise.</p></div>
+    <div class="grid">
+      ${DATA.retirees.map(r => `
+        <div class="card ret-card">
+          <h3>${r.name}</h3>
+          <div class="ret-years">${r.years}</div>
+          <ul class="ret-accolades">${r.accolades.map(a => `<li>${a}</li>`).join('')}</ul>
+          <div class="ret-story">${r.story}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function init(){
+  renderHOF();
+  renderTabs();
+  renderRules();
+  renderManagers();
+  renderChallenges();
+  renderRecords();
+  renderDraft();
+  renderStandings();
+  renderRetirees();
+  showTab('rules');
+}
+init();
+</script>
+</body>
+</html>
