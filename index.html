@@ -109,9 +109,10 @@
   .hof-card{
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:var(--radius);
+    border-radius:var(--radius) var(--radius) 0 0;
     box-shadow:var(--shadow);
-    padding:18px 18px 16px;
+    padding:18px 18px 30px;
+    clip-path: polygon(0 0, 100% 0, 100% 78%, 75% 100%, 50% 78%, 25% 100%, 0 78%);
   }
   .hof-year{
     font-family:'IBM Plex Mono', monospace;
@@ -124,12 +125,13 @@
     display:flex;
     justify-content:space-between;
     align-items:baseline;
+    gap:12px;
     padding:6px 0;
     border-top:1px dashed var(--line);
     font-size:14px;
   }
   .hof-place:first-of-type{ border-top:none; margin-top:10px; }
-  .hof-medal{ font-weight:700; color:var(--tomato-dark); width:26px; }
+  .hof-medal{ font-weight:700; color:var(--tomato-dark); width:32px; flex-shrink:0; }
   .hof-name{ flex:1; font-weight:600; }
 
   /* =====================================================
@@ -311,6 +313,7 @@
   .playoff-badge{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:var(--basil); color:#fff; }
   .bubble-badge{ background:var(--gold-light); color:#4a3a10; }
   .out-badge{ background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
+  .cutoff-row td{ border-top:3px solid var(--tomato); }
 
   /* =====================================================
      RETIREES
@@ -373,20 +376,20 @@ const DATA = {
   // ---- LEAGUE HISTORY (shown at the top of the page) ----
   // One entry per season. Add a new one each year.
   history: [
-    { year: 2023, first: "Andrew Samuels", second: "Parker Johnson", third: "Garrett Lusk", last: "Max Swan" },
-    { year: 2024, first: "Parker Johnson", second: "Annie Uyeki", third: "Eva Mayo", last: "Henry Isaacson" },
     { year: 2025, first: "Parker Johnson", second: "Hugo Mayson", third: "Henry Isaacson", last: "Max Swan" },
+    { year: 2024, first: "Parker Johnson", second: "Annie Uyeki", third: "Eva Mayo", last: "Henry Isaacson" },
+    { year: 2023, first: "Andrew Samuels", second: "Parker Johnson", third: "Garrett Lusk", last: "Max Swan" },
   ],
 
   // ---- RULES (2026 ESPN league rules) ----
   // Give each rule a short title and a plain-language explanation.
   rules: [
-    { title: "[Scoring type]", detail: "[e.g. PPR, Half-PPR, Standard -- describe your scoring settings]" },
-    { title: "[Roster size]", detail: "[Total roster spots, starters vs. bench]" },
-    { title: "[Playoff format]", detail: "[How many teams make the playoffs -- looks like 6, given Wk 16-18 are Playoffs/Semi/Final]" },
-    { title: "[Waivers]", detail: "[Waiver type -- FAAB, rolling, etc. -- and budget if applicable]" },
-    { title: "[Trade rules]", detail: "[Trade deadline, veto rules, etc.]" },
-    { title: "[Payouts]", detail: "[How the buy-in is split among places]" },
+    { title: "Scoring type", detail: "PPR" },
+    { title: "Roster size", detail: "15. 9 starters,6 bench." },
+    { title: "Playoff format", detail: "Top 8 teams make the playoffs, bottom 2 play a best-of-three to determine the league loser. The Playoff seeding tie breaker is \"total points for\"" },
+    { title: "Waiver Order", detail: "Resets each week to inverse order of standings" },
+    { title: "Trade rules", detail: "The trade deadline is Jan 6, 2027 @ 12:00 PM EST. Four vetos are required to veto a trade and there is a 1 day review period." },
+    { title: "Payouts", detail: "1st - $125 2nd - $75 3rd - $25" },
   ],
 
   // ---- 2026 MANAGERS ----
@@ -397,14 +400,14 @@ const DATA = {
   managers: [
     { name: "Parker Johnson", team: "Four Fans of Freedom", initials: "PJ", record: "34-18", winPct: ".654", bestFinish: "1st", champs: 2, rival: "Garrett Lusk (5-3, 8 games)" },
     { name: "Hugo Mayson", team: "Mad Rooter", initials: "HM", record: "22-30", winPct: ".423", bestFinish: "2nd", champs: 0, rival: "Parker Johnson (1-6, 7 games)" },
-    { name: "Henry Isaacson", team: "Devonta Smithwicks", initials: "HI", record: "12-22", winPct: ".353", bestFinish: "3rd", champs: 0, rival: "Max Swan (4-3, 7 games)" },
+    { name: "Vishan Patel", team: "TBD", initials: "VP", record: "*Rookie*", winPct: "-", bestFinish: "-", champs: 0, rival: "Max Swan" },
     { name: "Garrett Lusk", team: "Dez Caught It", initials: "GL", record: "28-24", winPct: ".538", bestFinish: "3rd", champs: 0, rival: "Parker Johnson (3-5, 8 games)" },
     { name: "Tommy Van Pelt", team: "Hooked On BoNix", initials: "TVP", record: "34-18", winPct: ".654", bestFinish: "5th", champs: 0, rival: "Eva Mayo (6-1, 7 games)" },
     { name: "Eva Mayo", team: "First Down Divas", initials: "EM", record: "25-27", winPct: ".481", bestFinish: "3rd", champs: 0, rival: "Annie Uyeki (3-4, 7 games)" },
     { name: "Caroline Smith", team: "Caroline's Men", initials: "CS", record: "11-6", winPct: ".647", bestFinish: "7th", champs: 0, rival: "Annie Uyeki (2-1, 3 games)" },
     { name: "Annie Uyeki", team: "Team BFPQueen", initials: "AU", record: "24-28", winPct: ".462", bestFinish: "2nd", champs: 0, rival: "Eva Mayo (4-3, 7 games)" },
     { name: "Max Swan", team: "Go Get Em", initials: "MS", record: "18-34", winPct: ".346", bestFinish: "9th", champs: 0, rival: "Henry Isaacson (3-4, 7 games)" },
-    { name: "Quinn Tunnell", team: "For Sureeeeeeeee FC", initials: "QT", record: "15-19", winPct: ".441", bestFinish: "7th", champs: 0, rival: "Hugo Mayson (3-2, 5 games)" },
+    { name: "Carly Pogue", team: "TBD", initials: "CP", record: "*Rookie*", winPct: "-", bestFinish: "-", champs: 0, rival: "Tommy Van Pelt" },
   ],
 
   // ---- CHALLENGES ($5 side bets, 10 of the ~15 regular season weeks) ----
@@ -424,22 +427,30 @@ const DATA = {
   ],
 
   // ---- RECORDS (trophy case) ----
-  // Add or remove trophies freely -- the case reflows automatically.
+  // "seasonAwards" is the current season's trophies -- swap these out each
+  // year. "records" is the permanent all-time record book below it. Add or
+  // remove trophies freely from either -- the case reflows automatically.
+  seasonAwards: [
+    { name: "League Champion", value: "2025", holder: "Parker Johnson" },
+    { name: "Highest Single Week", value: "207.86", holder: "Tommy Van Pelt, Wk 7" },
+    { name: "Rookie of the Year", value: "2025", holder: "Caroline Smith" },
+    { name: "Biggest Steal", value: "Rd 7", holder: "Garrett Lusk -- George Pickens (WR5 finish)" },
+    { name: "Wolf of Wall Street", value: "38 pickups", holder: "Henry Isaacson" },
+  ],
   records: [
     { name: "Most Championships", value: "2", holder: "Parker Johnson" },
     { name: "Highest Career Win %", value: ".722", holder: "Andrew Samuels (1 season, retired)" },
     { name: "Most Career Wins", value: "34", holder: "Parker Johnson & Tommy Van Pelt (tied)" },
     { name: "Highest Single Week Score", value: "207.86", holder: "Tommy Van Pelt, Wk 7, 2025" },
-    { name: "[Longest Win Streak]", value: "[games]", holder: "[Manager Name]" },
-    { name: "[Most Money Won (Challenges)]", value: "[$]", holder: "[Manager Name]" },
+    { name: "Longest Win Streak", value: "8", holder: "Andrew Samuels (23') & Garrett Lusk (24'- 25')" },
   ],
 
   // ---- DRAFT CENTRAL ----
   draft: {
-    date: "August 23rd (tentative)",
-    time: "7:00 PM EST (tentative)",
-    location: "[In-person address or video call link]",
-    notes: "Draft order TBD. [Add any other pertinent info -- keeper rules, snack duty, etc.]",
+    date: "August 23rd",
+    time: "3:00 PM EST (tentative)",
+    location: "205 e 22nd st, New York NY",
+    notes: "Draft order TBD",
     // Once the draft happens, you can either fill in resultsTable below by
     // hand, or use the "Upload draft results" box on the page to load a
     // CSV. Note: an uploaded CSV only displays for your current visit to
@@ -457,14 +468,14 @@ const DATA = {
   standings: [
     { rank: 1, team: "Four Fans of Freedom", manager: "Parker Johnson", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
     { rank: 2, team: "Mad Rooter", manager: "Hugo Mayson", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 3, team: "Devonta Smithwicks", manager: "Henry Isaacson", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 4, team: "Dez Caught It", manager: "Garrett Lusk", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 5, team: "Hooked On BoNix", manager: "Tommy Van Pelt", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 6, team: "First Down Divas", manager: "Eva Mayo", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 7, team: "Caroline's Men", manager: "Caroline Smith", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 8, team: "Team BFPQueen", manager: "Annie Uyeki", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 9, team: "Go Get Em", manager: "Max Swan", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
-    { rank: 10, team: "For Sureeeeeeeee FC", manager: "Quinn Tunnell", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 3, team: "Dez Caught It", manager: "Garrett Lusk", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 4, team: "Hooked On BoNix", manager: "Tommy Van Pelt", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 5, team: "First Down Divas", manager: "Eva Mayo", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 6, team: "Caroline's Men", manager: "Caroline Smith", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 7, team: "Team BFPQueen", manager: "Annie Uyeki", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 8, team: "Go Get Em", manager: "Max Swan", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 9, team: "TBD", manager: "Carly Pogue", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
+    { rank: 10, team: "TBD", manager: "Vishan Patel", record: "0-0", pf: "0.0", pa: "0.0", playoff: "out" },
   ],
 
   // ---- RETIREES ----
@@ -472,17 +483,22 @@ const DATA = {
     {
       name: "Andrew Samuels", years: "2023",
       accolades: ["2023 League Champion", "Highest career win percentage in league history (.722)"],
-      story: "[The funny/honest reason they retired -- keep it good-natured]"
     },
     {
       name: "Joshua Sherry", years: "2023",
       accolades: ["9-9 career record"],
-      story: "[The funny/honest reason they retired -- keep it good-natured]"
     },
     {
       name: "Molly Sanders", years: "2023-2024",
       accolades: ["15-20 career record", "4th place finish, 2024"],
-      story: "[The funny/honest reason they retired -- keep it good-natured]"
+    },
+    {
+      name: "Quinn Tunnell", years: "2024-2025",
+      accolades: ["15-19 career record", "7th place finish, 2024"],
+    },
+    {
+      name: "Henry Isaacson", years: "2024-2025",
+      accolades: ["15-20 career record", "3rd place finish, 2025"],
     },
   ],
 };
@@ -590,26 +606,28 @@ function renderChallenges(){
 
 function renderRecords(){
   const p = document.getElementById('panel-records');
+  const shelf = list => list.map(r => `
+    <div class="trophy-slot">
+      <div class="trophy">
+        <div class="trophy-ring"></div>
+        <div class="trophy-cup"></div>
+        <div class="trophy-stem"></div>
+        <div class="trophy-base"></div>
+      </div>
+      <div class="trophy-label">
+        <div class="rec-name">${r.name}</div>
+        <div class="rec-value">${r.value}</div>
+        <div class="rec-holder">${r.holder}</div>
+      </div>
+    </div>
+  `).join('');
   p.innerHTML = `
     <div class="panel-head"><h2>Records</h2><p>The trophy case.</p></div>
     <div class="case">
-      <div class="shelf-row">
-        ${DATA.records.map(r => `
-          <div class="trophy-slot">
-            <div class="trophy">
-              <div class="trophy-ring"></div>
-              <div class="trophy-cup"></div>
-              <div class="trophy-stem"></div>
-              <div class="trophy-base"></div>
-            </div>
-            <div class="trophy-label">
-              <div class="rec-name">${r.name}</div>
-              <div class="rec-value">${r.value}</div>
-              <div class="rec-holder">${r.holder}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
+      <div class="chal-subhead" style="margin-top:0; color:var(--gold-light);">2025 Season Awards</div>
+      <div class="shelf-row">${shelf(DATA.seasonAwards)}</div>
+      <div class="chal-subhead" style="color:var(--gold-light);">All-Time Records</div>
+      <div class="shelf-row">${shelf(DATA.records)}</div>
     </div>
   `;
 }
@@ -682,7 +700,7 @@ function renderStandings(){
       <thead><tr><th>#</th><th>Team</th><th>Manager</th><th>Record</th><th>PF</th><th>PA</th><th>Playoffs</th></tr></thead>
       <tbody>
         ${DATA.standings.map(s => `
-          <tr>
+          <tr class="${s.rank === 9 ? 'cutoff-row' : ''}">
             <td>${s.rank}</td><td>${s.team}</td><td>${s.manager}</td>
             <td class="num">${s.record}</td><td class="num">${s.pf}</td><td class="num">${s.pa}</td>
             <td>${badge(s.playoff)}</td>
@@ -703,7 +721,6 @@ function renderRetirees(){
           <h3>${r.name}</h3>
           <div class="ret-years">${r.years}</div>
           <ul class="ret-accolades">${r.accolades.map(a => `<li>${a}</li>`).join('')}</ul>
-          <div class="ret-story">${r.story}</div>
         </div>
       `).join('')}
     </div>
