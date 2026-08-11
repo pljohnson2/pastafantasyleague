@@ -382,11 +382,11 @@ const DATA = {
   // Give each rule a short title and a plain-language explanation.
   rules: [
     { title: "Scoring type", detail: "PPR" },
-    { title: "Roster size", detail: "15. 9 starters,6 bench." },
+    { title: "Roster size", detail: "15. 9 starters, 6 bench." },
     { title: "Playoff format", detail: "Top 8 teams make the playoffs, bottom 2 play a best-of-three to determine the league loser. The Playoff seeding tie breaker is \"total points for\"" },
     { title: "Waiver Order", detail: "Resets each week to inverse order of standings" },
     { title: "Trade rules", detail: "The trade deadline is Jan 6, 2027 @ 12:00 PM EST. Four vetos are required to veto a trade and there is a 1 day review period." },
-    { title: "Payouts", detail: "1st - $125 2nd - $75 3rd - $25" },
+    { title: "Payouts", detail: "1st - $125   2nd - $75   3rd - $25" },
   ],
 
   // ---- 2026 MANAGERS ----
@@ -577,7 +577,7 @@ function renderRules(){
 function renderManagers(){
   const p = document.getElementById('panel-managers');
   p.innerHTML = `
-    <div class="panel-head"><h2>2026 Managers</h2><p>All 10 managers, their career numbers, and the stats that make this league fun to argue about.</p></div>
+    <div class="panel-head"><h2>2026 Managers</h2><p>All 10 current managers and their career numbers.</p></div>
     <div class="grid">
       ${DATA.managers.map(m => `
         <div class="card mgr-card">
@@ -615,7 +615,7 @@ function renderChallenges(){
     </div>
   `;
   p.innerHTML = `
-    <div class="panel-head"><h2>Weekly Challenges</h2><p>$5 in, winner take all. Ten of roughly fifteen weeks each season.</p></div>
+    <div class="panel-head"><h2>Weekly Challenges</h2><p>$5 rewards. Ten weeks each season.</p></div>
     <div class="chal-subhead">Upcoming</div>
     <div class="grid">${upcoming.map(card).join('') || '<p>No upcoming challenges set yet.</p>'}</div>
     <div class="chal-subhead">Completed</div>
@@ -743,7 +743,7 @@ function renderStandings(){
                 : '<span class="playoff-badge out-badge">OUT</span>';
   p.innerHTML = `
     <div class="standings-top">
-      <div class="panel-head" style="margin-bottom:0;"><h2>Standings</h2><p>Updated manually -- paste in the latest numbers from ESPN each week.</p></div>
+      <div class="panel-head" style="margin-bottom:0;"><h2>Standings</h2><p>Updated manually </p></div>
       <div class="updated-note">Last updated: ${DATA.standingsUpdated}</div>
     </div>
     <table>
